@@ -1,0 +1,9 @@
+ipykernel
+matplotlib
+pandas
+scipy
+networkx
+autopep8
+pygraphviz
+seaborn
+cgt_perezsechi @ git+https://github.com/perez-sechi/cgt@main
