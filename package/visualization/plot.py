@@ -184,9 +184,11 @@ def plot_shap_categorical_distribution(variable_name, X, shap_values):
     ax2.spines["left"].set_visible(False)
 
     # Add a new x axis with labels in variable_label list
+    ax3_labels = [f"{str(value)}%" for value in variable_sample_percentage]
+
     ax3 = ax1.twiny()
     ax3.set_xticks(n_ticks)
-    ax3.set_xticklabels([f"{str(value)}%" for value in variable_sample_percentage])
+    ax3.set_xticklabels(ax3_labels)
     ax3.set_xlabel(f"{variable_name} category sample size (%)", color="black")
     ax3.tick_params(axis="x", labelcolor="black")
     ax3.spines["right"].set_visible(False)
@@ -194,6 +196,12 @@ def plot_shap_categorical_distribution(variable_name, X, shap_values):
     ax3.set_xlim(ax1.get_xlim())
 
     pl.show()
+
+    return {
+        "abs_shap_relevance": abs_shap_relevance,
+        "abs_shap_mean_vs_max": abs_shap_mean_vs_max,
+        "variable_label": ax3_labels,
+    }
 
 
 def plot_shap_numerical_distribution(variable_name, X, shap_values, n_bins):
@@ -293,14 +301,20 @@ def plot_shap_numerical_distribution(variable_name, X, shap_values, n_bins):
 
     pl.show()
 
+    return {
+        "abs_shap_relevance": abs_shap_relevance,
+        "abs_shap_mean_vs_max": abs_shap_mean_vs_max,
+        "variable_label": variable_label,
+    }
+
 
 def plot_shap_distribution(variable_name, X, shap_values, n_bins):
     if is_categorical(X[variable_name]):
-        plot_shap_categorical_distribution(
+        return plot_shap_categorical_distribution(
             variable_name, X, shap_values
         )
     else:
-        plot_shap_numerical_distribution(
+        return plot_shap_numerical_distribution(
             variable_name, X, shap_values, n_bins
         )
 
