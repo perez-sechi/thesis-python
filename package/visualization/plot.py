@@ -151,8 +151,15 @@ def plot_shap_categorical_distribution(variable_name, X, shap_values):
 
     cmap = shap.plots.colors._colors.red_blue
 
-    norm_shap_mean = (shap_mean - np.min(shap_mean)) / \
-        (np.max(shap_mean) - np.min(shap_mean))
+    # Normalización que respeta el signo de los valores SHAP:
+    # Valores negativos -> mitad inferior del colormap [0, 0.5]
+    # Valor cero -> punto medio del colormap (0.5)
+    # Valores positivos -> mitad superior del colormap [0.5, 1.0]
+    max_abs_shap = max(abs(np.min(shap_mean)), abs(np.max(shap_mean)))
+    if max_abs_shap > 0:
+        norm_shap_mean = 0.5 + (shap_mean / (2 * max_abs_shap))
+    else:
+        norm_shap_mean = np.full_like(shap_mean, 0.5)
     colors = cmap(norm_shap_mean)
 
 
@@ -201,6 +208,7 @@ def plot_shap_categorical_distribution(variable_name, X, shap_values):
         "abs_shap_relevance": abs_shap_relevance,
         "abs_shap_mean_vs_max": abs_shap_mean_vs_max,
         "variable_label": ax3_labels,
+        "norm_shap_mean": norm_shap_mean,
     }
 
 
@@ -241,8 +249,15 @@ def plot_shap_numerical_distribution(variable_name, X, shap_values, n_bins):
 
     cmap = shap.plots.colors._colors.red_blue
 
-    norm_shap_mean = (shap_mean - np.min(shap_mean)) / \
-        (np.max(shap_mean) - np.min(shap_mean))
+    # Normalización que respeta el signo de los valores SHAP:
+    # Valores negativos -> mitad inferior del colormap [0, 0.5]
+    # Valor cero -> punto medio del colormap (0.5)
+    # Valores positivos -> mitad superior del colormap [0.5, 1.0]
+    max_abs_shap = max(abs(np.min(shap_mean)), abs(np.max(shap_mean)))
+    if max_abs_shap > 0:
+        norm_shap_mean = 0.5 + (shap_mean / (2 * max_abs_shap))
+    else:
+        norm_shap_mean = np.full_like(shap_mean, 0.5)
     colors = cmap(norm_shap_mean)
 
     bar_width = 100 / n_bins * 0.95  # 95% of bin width, leaving 5% margin
@@ -305,6 +320,7 @@ def plot_shap_numerical_distribution(variable_name, X, shap_values, n_bins):
         "abs_shap_relevance": abs_shap_relevance,
         "abs_shap_mean_vs_max": abs_shap_mean_vs_max,
         "variable_label": variable_label,
+        "norm_shap_mean": norm_shap_mean,
     }
 
 
@@ -659,8 +675,15 @@ def plot_shap_lorenz_curve(variable_name, X, shap_values, n_bins):
 
     cmap = shap.plots.colors._colors.red_blue
 
-    norm_shap_mean = (mean_x_values - np.min(mean_x_values)) / \
-        (np.max(mean_x_values) - np.min(mean_x_values))
+    # Normalización que respeta el signo de los valores SHAP:
+    # Valores negativos -> mitad inferior del colormap [0, 0.5]
+    # Valor cero -> punto medio del colormap (0.5)
+    # Valores positivos -> mitad superior del colormap [0.5, 1.0]
+    max_abs_shap = max(abs(np.min(mean_x_values)), abs(np.max(mean_x_values)))
+    if max_abs_shap > 0:
+        norm_shap_mean = 0.5 + (mean_x_values / (2 * max_abs_shap))
+    else:
+        norm_shap_mean = np.full_like(mean_x_values, 0.5)
     colors = cmap(norm_shap_mean)
 
     ax.bar(
