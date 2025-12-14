@@ -179,13 +179,22 @@ def plot_shap_categorical_distribution(variable_name, X, shap_values):
     ax1.grid(axis="y", linestyle=":", linewidth=0.5, alpha=0.5)
 
     ax2 = ax1.twinx()
-    ax2.plot(
-        ticks, abs_shap_mean_vs_max, color="black",
-        label=f"{variable_name} SHAP mean vs max"
-    )
+    # Draw horizontal lines for each category (no interpolation between categories)
+    for i, tick in enumerate(n_ticks):
+        ax2.hlines(
+            y=abs_shap_mean_vs_max[i],
+            xmin=tick - width / 2,
+            xmax=tick + width / 2,
+            color="black",
+            linewidth=2
+        )
     ax2.set_ylabel(f"SHAP Mean (%)", color="black")
     ax2.tick_params(axis="y", labelcolor="black")
     ax2.yaxis.set_major_formatter(mtick.PercentFormatter())
+    # Extend y-axis range slightly beyond data values, clamped to [0, 100]
+    y_min = max(0, np.min(abs_shap_mean_vs_max) - 10)
+    y_max = min(100, np.max(abs_shap_mean_vs_max) + 10)
+    ax2.set_ylim(y_min, y_max)
     ax2.spines["top"].set_visible(False)
     ax2.spines["right"].set_visible(False)
     ax2.spines["left"].set_visible(False)
