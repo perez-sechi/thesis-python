@@ -1,5 +1,6 @@
 import shap
 import numpy as np
+import pandas as pd
 import matplotlib.pylab as pl
 import matplotlib.ticker as mtick
 
@@ -650,53 +651,51 @@ def shap_acumulated_importance_value(
         variable_shap_values <= ending_percentile_value
     )[0]
 
-    percentile_shap_values = variable_shap_values[idx_survivors_accumulated]
+    percentile_accumulated_shap_values = variable_shap_values[idx_survivors_accumulated]
     percentile_x_values = X_variable.iloc[idx_survivors_percentile]
 
     return {
-        "percentile_shap_values": percentile_shap_values,
+        "percentile_accumulated_shap_values": percentile_accumulated_shap_values,
         "percentile_x_values": percentile_x_values,
     }
 
 def plot_shap_lorenz_curve(variable_name, X, shap_values, n_bins):
-    bins = np.arange(n_bins)
+    bins = np.arange(n_bins + 1)
     X_variable = X[variable_name]
 
-    lorenz_values = np.zeros(n_bins)
-    mean_x_values = np.zeros(n_bins)
+    lorenz_values = np.zeros(n_bins + 1)
+    mean_x_values = np.zeros(n_bins + 1)
     variable_index = X.columns.get_loc(variable_name)
     variable_shap_values = shap_values[:, variable_index]
     shap_sum = np.sum(shap_values[:, variable_index])
 
     for i in bins:
-        starting_percentile = i * 100 / n_bins
-        ending_percentile = (i + 1) * 100 / n_bins
+        if i == 0:
+            lorenz_values[i] = 0
+            mean_x_values[i] = 0
+            continue
+        starting_percentile = (i - 1) * 100 / n_bins
+        ending_percentile = i * 100 / n_bins
         result = shap_acumulated_importance_value(
             X_variable,
             variable_shap_values,
             starting_percentile,
             ending_percentile
         )
-        lorenz_values[i] = 100 * np.sum(result["percentile_shap_values"]) / shap_sum
+        lorenz_values[i] = 100 * np.sum(result["percentile_accumulated_shap_values"]) / shap_sum
         mean_x_values[i] = np.mean(result["percentile_x_values"])
 
     _, ax = pl.subplots()
 
     cmap = shap.plots.colors._colors.red_blue
 
-    # Normalización que respeta el signo de los valores SHAP:
-    # Valores negativos -> mitad inferior del colormap [0, 0.5]
-    # Valor cero -> punto medio del colormap (0.5)
-    # Valores positivos -> mitad superior del colormap [0.5, 1.0]
-    max_abs_shap = max(abs(np.min(mean_x_values)), abs(np.max(mean_x_values)))
-    if max_abs_shap > 0:
-        norm_shap_mean = 0.5 + (mean_x_values / (2 * max_abs_shap))
-    else:
-        norm_shap_mean = np.full_like(mean_x_values, 0.5)
+    norm_shap_mean = (mean_x_values - np.min(mean_x_values)) / \
+        (np.max(mean_x_values) - np.min(mean_x_values))
     colors = cmap(norm_shap_mean)
 
+    bar_width = 100 / n_bins * 0.95  # 95% of bin width, leaving 5% margin
     ax.bar(
-        bins * 100 / n_bins, lorenz_values, color=colors
+        bins * 100 / n_bins, lorenz_values, width=bar_width, color=colors
     )
     ax.plot(bins * 100 / n_bins, bins * 100 / n_bins, color="green")
 
