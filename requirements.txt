@@ -7,4 +7,5 @@ networkx
 autopep8
 pygraphviz
 seaborn
+regex
 cgt_perezsechi @ git+https://github.com/perez-sechi/cgt@main
